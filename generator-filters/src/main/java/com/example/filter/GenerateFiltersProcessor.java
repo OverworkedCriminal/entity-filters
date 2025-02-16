@@ -3,6 +3,7 @@ package com.example.filter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -81,7 +82,7 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private void generateFile(Element element, HashSet<String> fieldsToSkip) throws IOException {
+	private void generateFile(Element element, HashSet<String> fieldsToIgnore) throws IOException {
 		final var elementClassName = element.getSimpleName().toString();
 		final var elementPackageName = element.getEnclosingElement().toString();
 
@@ -97,13 +98,24 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 			.createSourceFile(classFullName);
 
 		try (final var writer = new PrintWriter(sourceFile.openWriter())) {
+			final var descriptions = createDescriptions(element, fieldsToIgnore);
+			if (descriptions.fieldsDescriptions.isEmpty()) {
+				processingEnv
+					.getMessager()
+					.printWarning("Generated filters are empty");
+			}
+
 			writer.print("package ");
 			writer.print(elementPackageName);
 			writer.println(";");
 			writer.println();
 
-			writer.println("import com.example.filter.NumericValueFilter;");
-			writer.println("import com.example.filter.StringValueFilter;");
+			if (descriptions.requireNumericValueFilter) {
+				writer.println("import com.example.filter.NumericValueFilter;");
+			}
+			if (descriptions.requireStringValueFilter) {
+				writer.println("import com.example.filter.StringValueFilter;");
+			}
 			writer.println("import jakarta.validation.Valid;");
 			writer.println("import jakarta.persistence.metamodel.SingularAttribute;");
 			writer.println("import lombok.Getter;");
@@ -123,50 +135,21 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 			writer.print(className);
 			writer.println(" {");
 
-			final var fieldsDescriptions = ElementFilter.fieldsIn(element.getEnclosedElements())
-				.stream()
-				.map(variableElement -> {
-					final var fieldDescription = new FieldDescription();
-					fieldDescription.type = variableElement.asType().toString();
-					fieldDescription.name = variableElement.getSimpleName().toString();
-					fieldDescription.filter = selectFilter(fieldDescription.type);
-					return fieldDescription;
-				})
-				.filter(fieldDescription -> {
-					if (fieldsToSkip.contains(fieldDescription.name)) {
-						processingEnv
-							.getMessager()
-							.printNote("Skipped field " + fieldDescription.name);
-						return false;
-					}
-					if (fieldDescription.filter == null) {
-						processingEnv
-							.getMessager()
-							.printWarning("Unsupported type " + fieldDescription.type);
-						return false;
-					}
+			writeFields(writer, descriptions.fieldsDescriptions);
+			writer.println();
 
-					return true;
-				})
-				.toList();
+			writeIntoSpecification(writer, elementClassName, descriptions.fieldsDescriptions);
+			writer.println();
 
-			if (fieldsDescriptions.isEmpty()) {
-				processingEnv
-					.getMessager()
-					.printWarning("Generated filters are empty");
+			if (descriptions.requireNumericValueFilter) {
+				writeNumericValueFilterFunction(writer, elementClassName);
+				writer.println();
 			}
 
-			writeFields(writer, fieldsDescriptions);
-			writer.println();
-
-			writeIntoSpecification(writer, elementClassName, fieldsDescriptions);
-			writer.println();
-
-			writeNumericValueFilterFunction(writer, elementClassName);
-			writer.println();
-
-			writeStringValueFilterFunction(writer, elementClassName);
-			writer.println();
+			if (descriptions.requireStringValueFilter) {
+				writeStringValueFilterFunction(writer, elementClassName);
+				writer.println();
+			}
 
 			writer.println("}");
 		}
@@ -268,24 +251,69 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 		writer.println("\t}");
 	}
 
-	private String selectFilter(String type) {
-		switch (type) {
-			case "java.lang.Integer":
-			case "java.lang.Long":
-			case "java.math.BigDecimal":
-			case "java.time.LocalDate":
-			case "java.time.LocalDateTime":
-				return NumericValueFilter.class.getSimpleName() + "<" + type + ">";
-			case "java.lang.String":
-				return StringValueFilter.class.getSimpleName();
-			default:
-				return null;
+	private Descriptions createDescriptions(Element element, Set<String> fieldsToIgnore) {
+		final var descriptions = new Descriptions();
+		descriptions.requireNumericValueFilter = false;
+		descriptions.requireStringValueFilter = false;	
+		descriptions.fieldsDescriptions = new ArrayList<FieldDescription>();
+
+		final var fields = ElementFilter.fieldsIn(element.getEnclosedElements());
+		for (final var field : fields) {
+			final var type = field.asType().toString();
+			final var name = field.getSimpleName().toString();
+
+			if (fieldsToIgnore.contains(name)) {
+				processingEnv
+					.getMessager()
+					.printNote("Ignored field " + name);
+				continue;
+			}
+
+			final String filter;
+			switch (type) {
+				case "java.lang.Integer":
+				case "java.lang.Long":
+				case "java.math.BigDecimal":
+				case "java.time.LocalDate":
+				case "java.time.LocalDateTime":
+					descriptions.requireNumericValueFilter = true;
+					filter = NumericValueFilter.class.getSimpleName() + "<" + type + ">";
+					break;
+				case "java.lang.String":
+					descriptions.requireStringValueFilter = true;
+					filter = StringValueFilter.class.getSimpleName();
+					break;
+				default:
+					filter = null;
+					break;
+			}
+
+			if (filter == null) {
+				processingEnv
+					.getMessager()
+					.printWarning("Unsupported type " + type);
+				continue;
+			}
+
+			final var fieldDescription = new FieldDescription();
+			fieldDescription.type = type;
+			fieldDescription.name = name;
+			fieldDescription.filter = filter;
+			descriptions.fieldsDescriptions.add(fieldDescription);
 		}
+
+		return descriptions;
 	}
-    
+
 	class FieldDescription {
 		public String type;
 		public String name;
 		public String filter;
+	}
+
+	class Descriptions {
+		public List<FieldDescription> fieldsDescriptions;
+		public boolean requireNumericValueFilter;
+		public boolean requireStringValueFilter;
 	}
 }
