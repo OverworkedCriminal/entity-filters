@@ -5,7 +5,7 @@
   <parent>
     <artifactId>entity-filters</artifactId>
     <groupId>com.example.filter</groupId>
-    <version>${revision}</version>
+    <version>0.0.1</version>
   </parent>
 
   <groupId>com.example.filter</groupId>
