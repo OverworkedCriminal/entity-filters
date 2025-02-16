@@ -2,8 +2,9 @@ package com.example.filter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -23,11 +24,11 @@ import com.google.auto.service.AutoService;
 @SupportedAnnotationTypes("com.example.filter.GenerateFilters")
 public class GenerateFiltersProcessor extends AbstractProcessor {
 
-	final List<Element> elementsToProcess;
+	final Queue<Element> elementsToProcess;
 
 
 	public GenerateFiltersProcessor() {
-		elementsToProcess = new ArrayList<>();
+		elementsToProcess = new ArrayDeque<>();
 	}
 
 	@Override
@@ -35,12 +36,11 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 		final var annotatedElements = roundEnv.getElementsAnnotatedWith(GenerateFilters.class);
 		elementsToProcess.addAll(annotatedElements);
 
-		processingEnv
-			.getMessager()
-			.printNote("Generating filters for " + elementsToProcess.toString());
+		final var elementsSize = elementsToProcess.size();
+		for (int i = 0; i < elementsSize; ++i) {
+			// Remove first element from the queue.
+			final var element = elementsToProcess.poll();
 
-		for (int i = 0; i < elementsToProcess.size(); ++i) {
-			final var element = elementsToProcess.get(i);
 			processingEnv
 					.getMessager()
 					.printNote("Generating filters for " + element.toString());
@@ -54,6 +54,9 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 				processingEnv
 					.getMessager()
 					.printNote("Missing class " + elementHibernateAccessorsName);
+				// Put element back into queue if it can't be processed at the moment.
+				// At later point in time it may be possible to process it.
+				elementsToProcess.add(element);
 				continue;
 			}
 
@@ -68,10 +71,6 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 					.getMessager()
 					.printWarning("Failed to generate filters " + e.getMessage(), element);
 			}
-
-			// remove processed element from the array
-			elementsToProcess.remove(i);
-			i -= 1;
 		}
 
 		return true;
