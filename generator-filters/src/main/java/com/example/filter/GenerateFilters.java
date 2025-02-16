@@ -15,4 +15,13 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface GenerateFilters {}
+public @interface GenerateFilters {
+
+    /**
+     * Allows to skip generation of selected fields.
+     * Should consist of copied field names.
+     * 
+     * By default filters are generated for each field (if type is supported).
+     */
+    public String[] fieldsToIgnore() default {};
+}

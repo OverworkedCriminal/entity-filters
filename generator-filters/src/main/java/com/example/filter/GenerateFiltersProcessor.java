@@ -3,6 +3,8 @@ package com.example.filter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -60,8 +62,11 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 				continue;
 			}
 
+			final var annotation = element.getAnnotation(GenerateFilters.class);
+			final var fieldsToSkip = new HashSet<String>(Arrays.asList(annotation.fieldsToIgnore()));
+
 			try {
-				generateFile(element);
+				generateFile(element, fieldsToSkip);
 				processingEnv
 					.getMessager()
 					.printNote("Generated filters for " + element.toString());
@@ -76,7 +81,7 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private void generateFile(Element element) throws IOException {
+	private void generateFile(Element element, HashSet<String> fieldsToSkip) throws IOException {
 		final var elementClassName = element.getSimpleName().toString();
 		final var elementPackageName = element.getEnclosingElement().toString();
 
@@ -128,14 +133,20 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 					return fieldDescription;
 				})
 				.filter(fieldDescription -> {
-					if (fieldDescription.filter != null) {
-						return true;
-					} else {
+					if (fieldsToSkip.contains(fieldDescription.name)) {
+						processingEnv
+							.getMessager()
+							.printNote("Skipped field " + fieldDescription.name);
+						return false;
+					}
+					if (fieldDescription.filter == null) {
 						processingEnv
 							.getMessager()
 							.printWarning("Unsupported type " + fieldDescription.type);
 						return false;
 					}
+
+					return true;
 				})
 				.toList();
 
