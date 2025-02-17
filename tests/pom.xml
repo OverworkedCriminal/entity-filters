@@ -5,7 +5,7 @@
   <parent>
     <artifactId>entity-filters</artifactId>
     <groupId>com.example.filter</groupId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
   </parent>
 
   <groupId>com.example.filter</groupId>
@@ -21,13 +21,13 @@
     <dependency>
         <groupId>com.example.filter</groupId>
         <artifactId>filters</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
         <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>com.example.filter</groupId>
         <artifactId>generator-filters</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
         <scope>test</scope>
     </dependency>
     <dependency>
@@ -101,7 +101,7 @@
                     <path>
                         <groupId>com.example.filter</groupId>
                         <artifactId>generator-filters</artifactId>
-                        <version>0.0.1</version>
+                        <version>0.0.2</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
