@@ -12,6 +12,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import com.example.filter.shared.StringValueFilterTestEntity;
 import com.example.filter.shared.StringValueFilterTestEntityFilters;
 import com.example.filter.shared.StringValueFilterTestRepository;
+import com.example.filter.string.StringValueFilter;
+import com.example.filter.string.StringValueFilterType;
 
 @DataJpaTest
 public class StringValueFilterTest {

@@ -1,6 +1,5 @@
-package com.example.filter;
+package com.example.filter.string;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,17 +13,18 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@ValidateStringValueFilter
 public class StringValueFilter {
 
     /**
      * Specifies what comparison should be used
      */
-    @NotNull
     private StringValueFilterType type;
 
     /**
-     * Value used in comparisons
+     * Value used in comparisons.
+     * 
+     * Must be null when type is IS_NULL or IS_NOT_NULL
      */
-    @NotNull
     private String v;
 }

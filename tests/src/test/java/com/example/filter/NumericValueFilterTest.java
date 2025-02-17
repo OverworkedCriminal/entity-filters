@@ -13,6 +13,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import com.example.filter.numeric.NumericValueFilter;
+import com.example.filter.numeric.NumericValueFilterType;
 import com.example.filter.shared.NumericValueFilterTestEntity;
 import com.example.filter.shared.NumericValueFilterTestEntityFilters;
 import com.example.filter.shared.NumericValueFilterTestRepository;

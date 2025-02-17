@@ -1,6 +1,5 @@
-package com.example.filter;
+package com.example.filter.numeric;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,23 +13,26 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@ValidateNumericValueFilter
 public class NumericValueFilter<T> {
 
     /**
      * Specifies what comparison should be used
      */
-    @NotNull
     private NumericValueFilterType type;
 
     /**
      * Value used in all comparisons.
-     * In "between" comparison used as lower value.
+     * In BETWEEN comparison used as lower value.
+     * 
+     * Must be null when type is IS_NULL or IS_NOT_NULL
      */
-    @NotNull
     private T v1;
 
     /**
-     * Value used only in "between" comparison as greater value.
+     * Value used only in BETWEEN comparison as greater value.
+     * 
+     * Must be null unless type is "BETWEEN"
      */
     private T v2;
 }
