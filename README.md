@@ -127,14 +127,14 @@ Add dependencies to pom.xml
 <dependency>
 	<groupId>com.example.filter</groupId>
 	<artifactId>filters</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 </dependency>
 
 <!-- Filters automatic generation -->
 <dependency>
 	<groupId>com.example.filter</groupId>
 	<artifactId>generator-filters</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 </dependency>
 
 <!-- It's necessary to also add lombok dependency -->
@@ -176,7 +176,7 @@ Add plugins to pom.xml
 						<path>
 							<groupId>com.example.filter</groupId>
 							<artifactId>generator-filters</artifactId>
-							<version>0.0.1</version>
+							<version>0.0.2</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>

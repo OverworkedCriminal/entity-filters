@@ -20,6 +20,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import com.example.filter.numeric.NumericValueFilter;
+import com.example.filter.string.StringValueFilter;
 import com.google.auto.service.AutoService;
 
 @AutoService(Processor.class)
@@ -111,10 +113,10 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 			writer.println();
 
 			if (descriptions.requireNumericValueFilter) {
-				writer.println("import com.example.filter.NumericValueFilter;");
+				writer.println("import com.example.filter.numeric.NumericValueFilter;");
 			}
 			if (descriptions.requireStringValueFilter) {
-				writer.println("import com.example.filter.StringValueFilter;");
+				writer.println("import com.example.filter.string.StringValueFilter;");
 			}
 			writer.println("import jakarta.validation.Valid;");
 			writer.println("import jakarta.persistence.metamodel.SingularAttribute;");
@@ -218,6 +220,8 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 		writer.println("\t\t\tcase GREATER       -> (root, query, cb) -> cb.greaterThan(root.get(attribute), filter.getV1());");
 		writer.println("\t\t\tcase GREATER_EQUAL -> (root, query, cb) -> cb.greaterThanOrEqualTo(root.get(attribute), filter.getV1());");
 		writer.println("\t\t\tcase BETWEEN       -> (root, query, cb) -> cb.between(root.get(attribute), filter.getV1(), filter.getV2());");
+		writer.println("\t\t\tcase IS_NULL       -> (root, query, cb) -> cb.isNull(root.get(attribute));");
+		writer.println("\t\t\tcase IS_NOT_NULL   -> (root, query, cb) -> cb.isNotNull(root.get(attribute));");
 		writer.println("\t\t};");
 		writer.println("\t}");
 	}
@@ -247,6 +251,8 @@ public class GenerateFiltersProcessor extends AbstractProcessor {
 		writer.println("\t\t\t\t),");		
 		writer.println("\t\t\t\tfilter.getV().toUpperCase()");
 		writer.println("\t\t\t);");
+		writer.println("\t\t\tcase IS_NULL     -> (root, query, cb) -> cb.isNull(root.get(attribute));");
+		writer.println("\t\t\tcase IS_NOT_NULL -> (root, query, cb) -> cb.isNotNull(root.get(attribute));");
 		writer.println("\t\t};");
 		writer.println("\t}");
 	}

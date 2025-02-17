@@ -1,4 +1,4 @@
-package com.example.filter;
+package com.example.filter.numeric;
 
 public enum NumericValueFilterType {
     LESS,
@@ -6,5 +6,8 @@ public enum NumericValueFilterType {
     EQUAL,
     GREATER,
     GREATER_EQUAL,
-    BETWEEN
+    BETWEEN,
+
+    IS_NULL,
+    IS_NOT_NULL
 }

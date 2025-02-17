@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
+import com.example.filter.numeric.NumericValueFilter;
 import com.example.filter.shared.CodeGenerationTestEntity;
 import com.example.filter.shared.CodeGenerationTestEntityFilters;
+import com.example.filter.string.StringValueFilter;
 
 public class CodeGenerationTest {
 
