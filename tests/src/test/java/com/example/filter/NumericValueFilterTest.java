@@ -1,6 +1,7 @@
 package com.example.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -40,10 +41,14 @@ public class NumericValueFilterTest {
                 new NumericValueFilterTestEntity(7L, 7),
                 new NumericValueFilterTestEntity(8L, 8),
                 new NumericValueFilterTestEntity(9L, 9),
-                new NumericValueFilterTestEntity(10L, 10)
+                new NumericValueFilterTestEntity(10L, 10),
+                new NumericValueFilterTestEntity(11L, null),
+                new NumericValueFilterTestEntity(12L, 12)
             )
         );
     }
+
+    //#region comparisons
 
     private void test_value(
         NumericValueFilter<Integer> filter,
@@ -96,7 +101,7 @@ public class NumericValueFilterTest {
     public void valueGreater() {
         test_value(
             new NumericValueFilter<Integer>(NumericValueFilterType.GREATER, 1, null),
-            2, 3, 4, 5, 6, 7, 8, 9, 10
+            2, 3, 4, 5, 6, 7, 8, 9, 10, 12
         );
     }
 
@@ -104,7 +109,7 @@ public class NumericValueFilterTest {
     public void valueGreaterEqual() {
         test_value(
             new NumericValueFilter<Integer>(NumericValueFilterType.GREATER_EQUAL, 5, null),
-            5, 6, 7, 8, 9, 10
+            5, 6, 7, 8, 9, 10, 12
         );
     }
 
@@ -115,5 +120,45 @@ public class NumericValueFilterTest {
             2, 3, 4
         );
     }
+
+    //#endregion
+    
+    //#region nulls
+
+    @Test
+    public void valueNull() {
+        final var filters = NumericValueFilterTestEntityFilters.builder()
+            .integerValue(new NumericValueFilter<Integer>(NumericValueFilterType.IS_NULL, null, null))
+            .build();
+        final var specification = filters.intoSpecification();
+
+        final var foundRecords = repository.findAll(specification);
+        assertFalse(foundRecords.isEmpty());
+
+        final var allContainNullValue = foundRecords
+            .stream()
+            .allMatch(record -> record.getIntegerValue() == null);
+
+        assertTrue(allContainNullValue);
+    }
+
+    @Test
+    public void valueNotNull() {
+        final var filters = NumericValueFilterTestEntityFilters.builder()
+            .integerValue(new NumericValueFilter<Integer>(NumericValueFilterType.IS_NOT_NULL, null, null))
+            .build();
+        final var specification = filters.intoSpecification();
+
+        final var foundRecords = repository.findAll(specification);
+        assertFalse(foundRecords.isEmpty());
+
+        final var allContainNonNullValue = foundRecords
+            .stream()
+            .allMatch(record -> record.getIntegerValue() != null);
+
+        assertTrue(allContainNonNullValue);
+    }
+
+    //#endregion
 
 }

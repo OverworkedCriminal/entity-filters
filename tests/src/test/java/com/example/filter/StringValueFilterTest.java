@@ -21,6 +21,7 @@ public class StringValueFilterTest {
     @Autowired
     private StringValueFilterTestRepository repository;
 
+    //#region comparisons
 
     @Test
     public void valueEqual() {
@@ -68,4 +69,60 @@ public class StringValueFilterTest {
         final var foundRecord = foundRecords.getFirst();
         assertEquals(value, foundRecord.getStringValue());
     }
+
+    //#endregion
+
+    //#region
+
+    @Test
+    public void valueNull() {
+        repository.saveAll(
+            List.of(
+                new StringValueFilterTestEntity(1L, "This should not be found"),
+                new StringValueFilterTestEntity(2L, null),
+                new StringValueFilterTestEntity(3L, "This also should not be found")
+            )
+        );
+        
+        final var filters = StringValueFilterTestEntityFilters.builder()
+            .stringValue(new StringValueFilter(StringValueFilterType.IS_NULL, null))
+            .build();
+        final var specification = filters.intoSpecification();
+
+        final var foundRecords = repository.findAll(specification);
+        assertEquals(1, foundRecords.size());
+
+        final var allContainNullValue = foundRecords
+            .stream()
+            .allMatch(record -> record.getStringValue() == null);
+
+        assertTrue(allContainNullValue);
+    }
+
+    @Test
+    public void valueNotNull() {
+        repository.saveAll(
+            List.of(
+                new StringValueFilterTestEntity(1L, "This should be found"),
+                new StringValueFilterTestEntity(2L, null),
+                new StringValueFilterTestEntity(3L, "This also should be found")
+            )
+        );
+        
+        final var filters = StringValueFilterTestEntityFilters.builder()
+            .stringValue(new StringValueFilter(StringValueFilterType.IS_NOT_NULL, null))
+            .build();
+        final var specification = filters.intoSpecification();
+
+        final var foundRecords = repository.findAll(specification);
+        assertEquals(2, foundRecords.size());
+
+        final var allContainNotNullValue = foundRecords
+            .stream()
+            .allMatch(record -> record.getStringValue() != null);
+
+        assertTrue(allContainNotNullValue);
+    }
+
+    //#endregion
 }
